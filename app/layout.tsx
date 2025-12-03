@@ -17,7 +17,7 @@ const rajdhani = Rajdhani({
 export const metadata: Metadata = {
   title: "Play Cup - Servidor FiveM",
   description:
-    "Entre agora no melhor servidor de campeonato atualmente me portugal conheça a Play Cup",
+    "Entre agora no melhor servidor de campeonato atualmente de portugal conheça a Play Cup",
   generator: "v0.app",
   icons: {
     icon: [
