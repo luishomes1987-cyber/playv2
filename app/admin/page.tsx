@@ -1,6 +1,7 @@
+// app/admin/page.tsx (ou app/admin/updates/page.tsx – onde estiver seu painel)
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAdmin } from "@/lib/admin-context"
 import { Button } from "@/components/ui/button"
@@ -25,33 +26,38 @@ interface Update {
   id: string
   title: string
   description: string
+  type: UpdateType
   date: string
-  category: UpdateType
+  image?: string
 }
 
-const categoryLabels: Record<UpdateType, string> = {
+const typeLabels: Record<UpdateType, string> = {
   novidade: "Novidade",
   patch: "Patch",
   evento: "Evento",
 }
 
-export default function AdminPage() {
+export default function AdminUpdatesPage() {
   const router = useRouter()
   const { isAdmin, adminName, logout } = useAdmin()
-  const [updatesList, setUpdatesList] = useState<Update[]>([])
+
+  const [updates, setUpdates] = useState<Update[]>([])
+  const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [deleteModal, setDeleteModal] = useState<{ open: boolean; updateId: string | null; updateTitle: string }>({
-    open: false,
-    updateId: null,
-    updateTitle: "",
-  })
 
-  // Form state
-  const [formTitle, setFormTitle] = useState("")
-  const [formDescription, setFormDescription] = useState("")
-  const [formCategory, setFormCategory] = useState<UpdateType>("novidade")
+  // Form
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [type, setType] = useState<UpdateType>("novidade")
+  const [image, setImage] = useState("") // opcional por enquanto
+
+  // Delete modal
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: string | null; title: string }>({
+    open: false,
+    id: null,
+    title: "",
+  })
 
   useEffect(() => {
     if (!isAdmin) {
@@ -63,102 +69,73 @@ export default function AdminPage() {
 
   const fetchUpdates = async () => {
     try {
-      const response = await fetch("/api/updates")
-      const data = await response.json()
-      setUpdatesList(data)
-    } catch (error) {
-      console.error("Erro ao carregar updates:", error)
+      const res = await fetch("/api/updates", { cache: "no-store" })
+      const data = await res.json()
+      setUpdates(data)
+    } catch (err) {
+      console.error(err)
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  const handleLogout = () => {
-    logout()
-    router.push("/admin/login")
-  }
-
-  const handleAddNew = () => {
-    setIsEditing(true)
-    setEditingId(null)
-    setFormTitle("")
-    setFormDescription("")
-    setFormCategory("novidade")
-  }
-
-  const handleEdit = (update: Update) => {
+  const startEdit = (update: Update) => {
     setIsEditing(true)
     setEditingId(update.id)
-    setFormTitle(update.title)
-    setFormDescription(update.description)
-    setFormCategory(update.category)
+    setTitle(update.title)
+    setDescription(update.description)
+    setType(update.type)
+    setImage(update.image || "")
   }
 
-  const handleSave = async () => {
-    if (!formTitle.trim() || !formDescription.trim()) return
+  const cancelEdit = () => {
+    setIsEditing(false)
+    setEditingId(null)
+    setTitle("")
+    setDescription("")
+    setType("novidade")
+    setImage("")
+  }
+
+  const saveUpdate = async () => {
+    if (!title.trim() || !description.trim()) return
+
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      type,
+      image: image.trim() || undefined,
+    }
 
     try {
       if (editingId) {
+        // EDITAR
         await fetch("/api/updates", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: editingId,
-            title: formTitle,
-            description: formDescription,
-            category: formCategory,
-          }),
+          body: JSON.stringify({ id: editingId, ...payload }),
         })
       } else {
+        // CRIAR
         await fetch("/api/updates", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: formTitle,
-            description: formDescription,
-            category: formCategory,
-          }),
+          body: JSON.stringify(payload),
         })
       }
-
-      await fetchUpdates()
-      handleCancel()
-    } catch (error) {
-      console.error("Erro ao salvar update:", error)
-      alert("Erro ao salvar update. Tente novamente.")
+      fetchUpdates()
+      cancelEdit()
+    } catch (e) => {
+      alert("Erro ao salvar update")
+      console.error(e)
     }
-  }
-
-  const handleCancel = () => {
-    setIsEditing(false)
-    setEditingId(null)
-    setFormTitle("")
-    setFormDescription("")
-    setFormCategory("novidade")
-  }
-
-  const handleDelete = (id: string, title: string) => {
-    setDeleteModal({ open: true, updateId: id, updateTitle: title })
   }
 
   const confirmDelete = async () => {
-    if (!deleteModal.updateId) return
-
-    try {
-      await fetch(`/api/updates?id=${deleteModal.updateId}`, {
-        method: "DELETE",
-      })
-
-      await fetchUpdates()
-      setDeleteModal({ open: false, updateId: null, updateTitle: "" })
-    } catch (error) {
-      console.error("Erro ao deletar update:", error)
-      alert("Erro ao deletar update. Tente novamente.")
-    }
-  }
-
-  const cancelDelete = () => {
-    setDeleteModal({ open: false, updateId: null, updateTitle: "" })
+    if (!deleteModal.id) return
+    await fetch(`/api/updates?id=${deleteModal.id}`, { method: "DELETE" })
+    fetchUpdates()
+    setDeleteModal({ open: false, id: null, title: "" })
   }
 
   if (!isAdmin) return null
@@ -170,92 +147,78 @@ export default function AdminPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
-              Painel de Updates
+              Painel Admin – Updates
             </h1>
             <p className="text-yellow-200/60 mt-1">Olá, {adminName}</p>
           </div>
           <Button
-            onClick={handleLogout}
+            onClick={logout}
             variant="outline"
-            className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 bg-transparent"
+            className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sair
           </Button>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-8">
+        {/* Tabs */}
+        <div className="flex gap-3 mb-8">
           <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
             <Bell className="h-4 w-4 mr-2" />
             Updates
           </Button>
           <Link href="/admin/pagamentos">
-            <Button
-              variant="outline"
-              className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 bg-transparent"
-            >
+            <Button variant="outline" className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10">
               <CreditCard className="h-4 w-4 mr-2" />
               Pagamentos
             </Button>
           </Link>
         </div>
 
-        {/* Form de Adicionar/Editar */}
+        {/* Formulário */}
         {isEditing ? (
-          <Card className="mb-8 bg-slate-800/50 border-yellow-500/20 backdrop-blur">
+          <Card className="mb-8 bg-slate-800/50 border-yellow-500/20">
             <CardHeader>
-              <CardTitle className="text-yellow-400">{editingId ? "Editar Update" : "Novo Update"}</CardTitle>
+              <CardTitle className="text-yellow-400">
+                {editingId ? "Editar Update" : "Novo Update"}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-yellow-200">Título</label>
-                <Input
-                  value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="Digite o título do update"
-                  className="bg-slate-700/50 border-yellow-500/20 text-white placeholder:text-yellow-200/30"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-yellow-200">Descrição</label>
-                <Textarea
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="Digite a descrição do update"
-                  rows={4}
-                  className="bg-slate-700/50 border-yellow-500/20 text-white placeholder:text-yellow-200/30"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-yellow-200">Tipo</label>
-                <Select value={formCategory} onValueChange={(value: UpdateType) => setFormCategory(value)}>
-                  <SelectTrigger className="bg-slate-700/50 border-yellow-500/20 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-yellow-500/20">
-                    <SelectItem value="novidade">Novidade</SelectItem>
-                    <SelectItem value="patch">Patch</SelectItem>
-                    <SelectItem value="evento">Evento</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleSave}
-                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700"
-                >
+              <Input
+                placeholder="Título"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="bg-slate-700/50 border-yellow-500/20 text-white"
+              />
+              <Textarea
+                placeholder="Descrição"
+                rows={5}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="bg-slate-700/50 border-yellow-500/20 text-white"
+              />
+              <Select value={type} onValueChange={(v: UpdateType) => setType(v)}>
+                <SelectTrigger className="bg-slate-700/50 border-yellow-500/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="novidade">Novidade</SelectItem>
+                  <SelectItem value="patch">Patch</SelectItem>
+                  <SelectItem value="evento">Evento</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                placeholder="URL da imagem (opcional)"
+                value={image}
+                onChange={(e) => setImage(e.target.value)}
+                className="bg-slate-700/50 border-yellow-500/20 text-white"
+              />
+              <div className="flex gap-3">
+                <Button onClick={saveUpdate} className="bg-gradient-to-r from-yellow-500 to-yellow-600">
                   <Save className="h-4 w-4 mr-2" />
                   Salvar
                 </Button>
-                <Button
-                  onClick={handleCancel}
-                  variant="outline"
-                  className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 bg-transparent"
-                >
+                <Button onClick={cancelEdit} variant="outline" className="border-yellow-500/30 text-yellow-400">
                   <X className="h-4 w-4 mr-2" />
                   Cancelar
                 </Button>
@@ -265,7 +228,7 @@ export default function AdminPage() {
         ) : (
           <div className="mb-8">
             <Button
-              onClick={handleAddNew}
+              onClick={() => setIsEditing(true)}
               className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -274,43 +237,40 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Lista de Updates */}
-        {isLoading ? (
-          <Card className="bg-slate-800/50 border-yellow-500/20 backdrop-blur">
-            <CardContent className="p-12 text-center">
-              <p className="text-yellow-200/50">Carregando updates...</p>
-            </CardContent>
+        {/* Lista */}
+        {loading ? (
+          <p className="text-center text-yellow-200/50">Carregando...</p>
+        ) : updates.length === 0 ? (
+          <Card className="text-center py-16">
+            <p className="text-yellow-200/50">Nenhum update cadastrado</p>
           </Card>
         ) : (
           <div className="space-y-4">
-            {updatesList.map((update) => (
-              <Card key={update.id} className="bg-slate-800/50 border-yellow-500/20 backdrop-blur">
+            {updates.map((u) => (
+              <Card key={u.id} className="bg-slate-800/50 border-yellow-500/20">
                 <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
+                  <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-bold text-white">{update.title}</h3>
-                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                          {categoryLabels[update.category]}
+                        <h3 className="text-lg font-bold text-white">{u.title}</h3>
+                        <span className="px-3 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                          {typeLabels[u.type]}
                         </span>
                       </div>
-                      <p className="text-yellow-200/70 mb-2">{update.description}</p>
-                      <p className="text-xs text-yellow-200/40">{new Date(update.date).toLocaleDateString("pt-BR")}</p>
+                      <p className="text-yellow-200/70">{u.description}</p>
+                      <p className="text-xs text-yellow-200/40 mt-2">
+                        {new Date(u.date).toLocaleDateString("pt-BR")}
+                      </p>
                     </div>
                     <div className="flex gap-2 ml-4">
-                      <Button
-                        onClick={() => handleEdit(update)}
-                        size="icon"
-                        variant="ghost"
-                        className="text-yellow-400 hover:bg-yellow-500/10"
-                      >
+                      <Button size="icon" variant="ghost" onClick={() => startEdit(u)} className="text-yellow-400">
                         <Edit2 className="h-4 w-4" />
                       </Button>
                       <Button
-                        onClick={() => handleDelete(update.id, update.title)}
                         size="icon"
                         variant="ghost"
-                        className="text-red-400 hover:bg-red-500/10"
+                        onClick={() => setDeleteModal({ open: true, id: u.id, title: u.title })}
+                        className="text-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -321,38 +281,23 @@ export default function AdminPage() {
             ))}
           </div>
         )}
-
-        {!isLoading && updatesList.length === 0 && (
-          <Card className="bg-slate-800/50 border-yellow-500/20 backdrop-blur">
-            <CardContent className="p-12 text-center">
-              <p className="text-yellow-200/50">Nenhum update cadastrado ainda</p>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
-      <Dialog open={deleteModal.open} onOpenChange={(open) => !open && cancelDelete()}>
+      {/* Modal de delete */}
+      <Dialog open={deleteModal.open} onOpenChange={(o) => !o && setDeleteModal({ ...deleteModal, open: false })}>
         <DialogContent className="bg-slate-800 border-yellow-500/30">
           <DialogHeader>
-            <DialogTitle className="text-yellow-400">Confirmar Exclusão</DialogTitle>
+            <DialogTitle className="text-yellow-400">Confirmar exclusão</DialogTitle>
             <DialogDescription className="text-yellow-200/70">
-              Tem certeza que deseja deletar o update{" "}
-              <span className="font-semibold text-white">"{deleteModal.updateTitle}"</span>? Esta ação não pode ser
-              desfeita.
+              Deletar permanentemente "<span className="font-bold text-white">{deleteModal.title}</span>"?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              onClick={cancelDelete}
-              variant="outline"
-              className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 bg-transparent"
-            >
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeleteModal({ open: false, id: null, title: "" })}
+              className="border-yellow-500/30 text-yellow-400">
               Cancelar
             </Button>
-            <Button
-              onClick={confirmDelete}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
-            >
+            <Button onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
               Deletar
             </Button>
           </DialogFooter>
