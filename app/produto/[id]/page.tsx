@@ -104,7 +104,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-display font-bold text-primary">R$ {product.price.toFixed(2)}</span>
+                    <span className="text-4xl font-display font-bold text-primary">Eur {product.price.toFixed(2)}</span>
                   </div>
 
                   <AddToCartButton product={product} />
