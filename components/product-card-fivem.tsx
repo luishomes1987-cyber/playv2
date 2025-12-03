@@ -63,7 +63,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{product.description}</p>
 
           <div className="flex items-center justify-between pt-2">
-            <span className="text-2xl font-display font-bold text-primary">R$ {product.price.toFixed(2)}</span>
+            <span className="text-2xl font-display font-bold text-primary">Eur {product.price.toFixed(2)}</span>
             <Button size="sm" onClick={handlePurchase} className="glow-primary">
               <ExternalLink className="h-4 w-4 mr-1" />
               Adquirir
