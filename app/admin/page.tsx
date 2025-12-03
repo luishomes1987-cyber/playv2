@@ -1,7 +1,7 @@
 // app/admin/page.tsx (ou app/admin/updates/page.tsx – onde estiver seu painel)
 "use client"
 
-import { useEffect, { useState } from "react"
+import { useEffect, useState } from "react"               // ← corrigido aqui
 import { useRouter } from "next/navigation"
 import { useAdmin } from "@/lib/admin-context"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import Link from "next/link"
+
+type UpdateType = "novidade" | "patch" | "evento"
 
 type UpdateType = "novidade" | "patch" | "evento"
 
