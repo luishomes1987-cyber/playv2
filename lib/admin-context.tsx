@@ -27,10 +27,18 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false)
   const [adminName, setAdminName] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return
+
     const storedAdmin = localStorage.getItem("admin_user")
     const storedMessages = localStorage.getItem("admin_messages")
+    
     if (storedAdmin) {
       const admin = JSON.parse(storedAdmin)
       setIsAdmin(true)
@@ -44,9 +52,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }))
       setMessages(messagesWithDates)
     }
-  }, [])
+  }, [mounted])
 
   useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return
+
     const pollInterval = setInterval(async () => {
       try {
         const storedMessages = localStorage.getItem("admin_messages")
@@ -61,13 +71,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error("Error polling messages:", error)
       }
-    }, 2000) // Poll every 2 seconds
+    }, 2000)
 
     return () => clearInterval(pollInterval)
-  }, [])
+  }, [mounted])
 
   const login = (username: string, password: string) => {
-    // Credenciais padrão para demo
+    if (typeof window === 'undefined') return false
+    
     if (username === "admin" && password === "admin123") {
       const admin = { username, loginTime: new Date().toISOString() }
       localStorage.setItem("admin_user", JSON.stringify(admin))
@@ -79,12 +90,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
+    if (typeof window === 'undefined') return
+    
     localStorage.removeItem("admin_user")
     setIsAdmin(false)
     setAdminName(null)
   }
 
   const addMessage = (message: Omit<ChatMessage, "id" | "timestamp">) => {
+    if (typeof window === 'undefined') return
+    
     const newMessage: ChatMessage = {
       ...message,
       id: Date.now().toString(),
@@ -100,6 +115,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   }
 
   const markAsRead = (messageId: string) => {
+    if (typeof window === 'undefined') return
+    
     const updatedMessages = messages.map((msg) => (msg.id === messageId ? { ...msg, isRead: true } : msg))
     setMessages(updatedMessages)
     const messagesToStore = updatedMessages.map((msg) => ({
