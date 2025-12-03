@@ -1,4 +1,5 @@
-// app/admin/page.tsx (ou app/admin/updates/page.tsx – onde estiver seu painel)
+// app/admin/page.tsx   (ou app/admin/updates/page.tsx – onde você tiver o painel)
+
 "use client"
 
 import { useEffect, useState } from "react"               // ← corrigido aqui
@@ -19,8 +20,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import Link from "next/link"
-
-type UpdateType = "novidade" | "patch" | "evento"
 
 type UpdateType = "novidade" | "patch" | "evento"
 
@@ -48,13 +47,13 @@ export default function AdminUpdatesPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
 
-  // Form
+  // Formulário
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [type, setType] = useState<UpdateType>("novidade")
-  const [image, setImage] = useState("") // opcional por enquanto
+  const [image, setImage] = useState("")
 
-  // Delete modal
+  // Modal delete
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: string | null; title: string }>({
     open: false,
     id: null,
@@ -106,19 +105,17 @@ export default function AdminUpdatesPage() {
       title: title.trim(),
       description: description.trim(),
       type,
-      image: image.trim() || undefined,
+      image: image.trim() ? image.trim() : undefined,
     }
 
     try {
       if (editingId) {
-        // EDITAR
         await fetch("/api/updates", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editingId, ...payload }),
         })
       } else {
-        // CRIAR
         await fetch("/api/updates", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -127,7 +124,7 @@ export default function AdminUpdatesPage() {
       }
       fetchUpdates()
       cancelEdit()
-    } catch (e) => {
+    } catch (e) {
       alert("Erro ao salvar update")
       console.error(e)
     }
@@ -153,11 +150,7 @@ export default function AdminUpdatesPage() {
             </h1>
             <p className="text-yellow-200/60 mt-1">Olá, {adminName}</p>
           </div>
-          <Button
-            onClick={logout}
-            variant="outline"
-            className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
-          >
+          <Button onClick={logout} variant="outline" className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10">
             <LogOut className="h-4 w-4 mr-2" />
             Sair
           </Button>
@@ -179,7 +172,7 @@ export default function AdminUpdatesPage() {
 
         {/* Formulário */}
         {isEditing ? (
-          <Card className="mb-8 bg-slate-800/50 border-yellow-500/20">
+          <Card className="mb-8 bg-slate-800/50 border-yellow-500/20 backdrop-blur">
             <CardHeader>
               <CardTitle className="text-yellow-400">
                 {editingId ? "Editar Update" : "Novo Update"}
@@ -187,13 +180,13 @@ export default function AdminUpdatesPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Input
-                placeholder="Título"
+                placeholder="Título do update"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="bg-slate-700/50 border-yellow-500/20 text-white"
               />
               <Textarea
-                placeholder="Descrição"
+                placeholder="Descrição detalhada"
                 rows={5}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -209,12 +202,14 @@ export default function AdminUpdatesPage() {
                   <SelectItem value="evento">Evento</SelectItem>
                 </SelectContent>
               </Select>
+
               <Input
                 placeholder="URL da imagem (opcional)"
                 value={image}
                 onChange={(e) => setImage(e.target.value)}
                 className="bg-slate-700/50 border-yellow-500/20 text-white"
               />
+
               <div className="flex gap-3">
                 <Button onClick={saveUpdate} className="bg-gradient-to-r from-yellow-500 to-yellow-600">
                   <Save className="h-4 w-4 mr-2" />
@@ -239,19 +234,19 @@ export default function AdminUpdatesPage() {
           </div>
         )}
 
-        {/* Lista */}
+        {/* Lista de updates */}
         {loading ? (
-          <p className="text-center text-yellow-200/50">Carregando...</p>
+          <p className="text-center text-yellow-200/50 py-12">Carregando updates...</p>
         ) : updates.length === 0 ? (
-          <Card className="text-center py-16">
-            <p className="text-yellow-200/50">Nenhum update cadastrado</p>
+          <Card className="text-center py-16 bg-slate-800/50 border-yellow-500/20">
+            <p className="text-yellow-200/50">Nenhum update cadastrado ainda</p>
           </Card>
         ) : (
           <div className="space-y-4">
             {updates.map((u) => (
               <Card key={u.id} className="bg-slate-800/50 border-yellow-500/20">
                 <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start gap-6">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-bold text-white">{u.title}</h3>
@@ -264,15 +259,15 @@ export default function AdminUpdatesPage() {
                         {new Date(u.date).toLocaleDateString("pt-BR")}
                       </p>
                     </div>
-                    <div className="flex gap-2 ml-4">
-                      <Button size="icon" variant="ghost" onClick={() => startEdit(u)} className="text-yellow-400">
+                    <div className="flex gap-2">
+                      <Button size="icon" variant="ghost" onClick={() => startEdit(u)} className="text-yellow-400 hover:bg-yellow-500/10">
                         <Edit2 className="h-4 w-4" />
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => setDeleteModal({ open: true, id: u.id, title: u.title })}
-                        className="text-red-400"
+                        className="text-red-400 hover:bg-red-500/10"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -285,13 +280,13 @@ export default function AdminUpdatesPage() {
         )}
       </div>
 
-      {/* Modal de delete */}
+      {/* Modal de confirmação */}
       <Dialog open={deleteModal.open} onOpenChange={(o) => !o && setDeleteModal({ ...deleteModal, open: false })}>
         <DialogContent className="bg-slate-800 border-yellow-500/30">
           <DialogHeader>
             <DialogTitle className="text-yellow-400">Confirmar exclusão</DialogTitle>
             <DialogDescription className="text-yellow-200/70">
-              Deletar permanentemente "<span className="font-bold text-white">{deleteModal.title}</span>"?
+              Tem certeza que quer deletar "<span className="font-bold text-white">{deleteModal.title}</span>"?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
