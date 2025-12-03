@@ -9,7 +9,7 @@ const slides = [
   {
     id: 1,
     title: "Bem-vindo ao Play Cup",
-    subtitle: "Campeonato Brasileiro - A Competição Começa",
+    subtitle: "Campeonato de Portugal - A Competição Começa",
     cta: "Entrar na Partida",
     ctaLink: "/como-jogar",
     image: "/battle-royale-arena-gameplay.jpg",
