@@ -27,7 +27,10 @@ export function DiscordAuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (typeof window === "undefined") return
+    if (typeof window === "undefined") {
+      setIsLoading(false)
+      return
+    }
 
     const checkAuth = () => {
       try {
@@ -35,14 +38,11 @@ export function DiscordAuthProvider({ children }: { children: ReactNode }) {
         const userParam = urlParams.get("user")
 
         if (userParam) {
-          // Received user from callback, save to localStorage
           const userData = JSON.parse(decodeURIComponent(userParam))
           window.localStorage.setItem("discord-user", JSON.stringify(userData))
           setUser(userData)
-          // Clean URL
           window.history.replaceState({}, document.title, window.location.pathname)
         } else {
-          // Check localStorage for saved user
           const savedUser = window.localStorage.getItem("discord-user")
           if (savedUser) {
             setUser(JSON.parse(savedUser))
@@ -60,6 +60,8 @@ export function DiscordAuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const loginWithDiscord = () => {
+    if (typeof window === "undefined") return
+
     if (!DISCORD_CLIENT_ID) {
       console.error("Discord Client ID não configurado")
       alert("Discord Client ID não configurado. Adicione NEXT_PUBLIC_DISCORD_CLIENT_ID nas variáveis de ambiente.")
