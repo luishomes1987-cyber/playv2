@@ -6,18 +6,20 @@ export function FiveMFooter() {
     <footer className="border-t border-border/40 bg-card mt-20">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo e Descrição */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <span className="text-2xl font-display font-bold">RP</span>
-              </div>
-              <span className="font-display text-xl font-bold">FiveM RP</span>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              O melhor servidor de roleplay brasileiro. Junte-se à nossa comunidade e viva histórias incríveis.
-            </p>
-          </div>
+{/* Logo e Descrição */}
+<div className="space-y-4">
+  <div className="flex items-center space-x-2">
+    <img
+      src="https://cdn.discordapp.com/attachments/1441918069114146886/1445922515804491776/Perfil-Play-Cup.png?ex=69321bc7&is=6930ca47&hm=9eddf4bdd22faba581440aee90da8f45c75c09d8b72a4399079736ba96eb7699&"
+      alt="Play Cup Logo"
+      className="h-10 w-10 rounded-lg object-cover"
+    />
+    <span className="font-display text-xl font-bold">Play Cup</span>
+  </div>
+  <p className="text-sm text-muted-foreground leading-relaxed">
+    O melhor campeonato de Portugal da atualidade. Competição, emoção e o mais alto nível do cenário nacional.
+  </p>
+</div>
 
           {/* Links Úteis */}
           <div>
@@ -49,79 +51,9 @@ export function FiveMFooter() {
             </ul>
           </div>
 
-          {/* Suporte */}
-          <div>
-            <h3 className="font-display font-semibold mb-4">Suporte</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link href="/contato" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Contato
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/politica"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Política de Privacidade
-                </Link>
-              </li>
-              <li>
-                <Link href="/termos" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Termos de Uso
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Redes Sociais */}
-          <div>
-            <h3 className="font-display font-semibold mb-4">Redes Sociais</h3>
-            <div className="flex space-x-3">
-              <a
-                href="https://discord.gg/seuservidor"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-10 w-10 rounded-lg bg-muted hover:bg-primary/20 hover:text-primary transition-all flex items-center justify-center"
-              >
-                <MessageCircle className="h-5 w-5" />
-              </a>
-              <a
-                href="https://instagram.com/seuservidor"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-10 w-10 rounded-lg bg-muted hover:bg-primary/20 hover:text-primary transition-all flex items-center justify-center"
-              >
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a
-                href="https://youtube.com/@seuservidor"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-10 w-10 rounded-lg bg-muted hover:bg-primary/20 hover:text-primary transition-all flex items-center justify-center"
-              >
-                <Youtube className="h-5 w-5" />
-              </a>
-              <a
-                href="https://facebook.com/seuservidor"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-10 w-10 rounded-lg bg-muted hover:bg-primary/20 hover:text-primary transition-all flex items-center justify-center"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-            </div>
-          </div>
-        </div>
-
         <div className="border-t border-border/40 mt-8 pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            © 2025 FiveM RP. Todos os direitos reservados. Este servidor não é afiliado com Rockstar Games ou Take-Two
+            © 2025 Play Cup. Todos os direitos reservados. Este servidor não é afiliado com Rockstar Games ou Take-Two
             Interactive.
           </p>
         </div>
