@@ -27,7 +27,7 @@ const rarityGlow = {
   mitica: "hover:shadow-pink-500/20",
 }
 
-const DISCORD_PURCHASE_URL = "https://discord.gg/YndMVUeUJP"
+const DISCORD_PURCHASE_URL = "https://discord.gg/dzMfnd8x6k"
 
 export function ProductCard({ product }: ProductCardProps) {
   const handlePurchase = (e: React.MouseEvent) => {
@@ -63,7 +63,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{product.description}</p>
 
           <div className="flex items-center justify-between pt-2">
-            <span className="text-2xl font-display font-bold text-primary">Eur {product.price.toFixed(2)}</span>
+            <span className="text-2xl font-display font-bold text-primary">R$ {product.price.toFixed(2)}</span>
             <Button size="sm" onClick={handlePurchase} className="glow-primary">
               <ExternalLink className="h-4 w-4 mr-1" />
               Adquirir
