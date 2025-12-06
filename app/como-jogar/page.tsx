@@ -16,7 +16,7 @@ const steps = [
     icon: MessageCircle,
     title: "2. Entre no Discord",
     description: "Junte-se ao nosso servidor do Discord para se conectar com a comunidade.",
-    link: "https://discord.gg/UFmVzuUA",
+    link: "https://discord.gg/dzMfnd8x6k",
     linkText: "Entrar no Discord",
   },
   {
@@ -30,7 +30,7 @@ const steps = [
     icon: Play,
     title: "4. Conecte ao Servidor",
     description: "Abra o FiveM e pegue o seu time para começar a jogar!",
-    link: "https://discord.gg/UFmVzuUA",
+    link: "https://discord.gg/dzMfnd8x6k",
     linkText: "Conectar Agora",
   },
 ]
