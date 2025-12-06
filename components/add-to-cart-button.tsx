@@ -8,7 +8,7 @@ interface AddToCartButtonProps {
   product: Product
 }
 
-const DISCORD_PURCHASE_LINK = "https://discord.gg/playcup"
+const DISCORD_PURCHASE_LINK = "https://discord.gg/dzMfnd8x6k"
 
 export function AddToCartButton({ product }: AddToCartButtonProps) {
   const handleBuy = () => {
