@@ -68,7 +68,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const login = (username: string, password: string) => {
     // Credenciais padrão para demo
-    if (username === "admin" && password === "admin123") {
+    if (username === "Play2k25" && password === "PlayisBest") {
       const admin = { username, loginTime: new Date().toISOString() }
       localStorage.setItem("admin_user", JSON.stringify(admin))
       setIsAdmin(true)
